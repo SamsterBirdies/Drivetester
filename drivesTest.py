@@ -8,7 +8,8 @@ BLOCK_SIZE_BIAS = 20_000 #bytes
 # ---END OF SETTINGS---
 
 #import
-import shutil, sys
+from sys import argv
+from shutil import disk_usage
 from multiprocessing import Process, Queue
 #main function
 def processFunc(driveLetter, procMsg):
@@ -21,7 +22,7 @@ def processFunc(driveLetter, procMsg):
 	mainData['fullBlockHash'] = hash(mainData['fullBlockData'])
 
 	#analyze disk
-	total, used, free = shutil.disk_usage(driveLetter+":/")
+	total, used, free = disk_usage(driveLetter+":/")
 	mainData['fullBlockCount'] = free // BLOCK_SIZE #create blocks
 	mainData['finalBlockSize'] = (free - (BLOCK_SIZE_BIAS * (mainData['fullBlockCount'] + 1))) - (mainData['fullBlockCount'] * BLOCK_SIZE)
 
@@ -66,11 +67,11 @@ def processFunc(driveLetter, procMsg):
 #start
 if __name__ == "__main__":
 	#gather input
-	if len(sys.argv) > 2:
-		osType = sys.argv[1]
+	if len(argv) > 2:
+		osType = argv[1]
 		drivesToScan = []
-		for i in range(2, len(sys.argv)):
-			drivesToScan.append(sys.argv[i])
+		for i in range(2, len(argv)):
+			drivesToScan.append(argv[i])
 	else:
 		osType = input('Enter OS "windows" or "linux":')
 		if osType != 'windows':
@@ -80,9 +81,9 @@ if __name__ == "__main__":
 	print("Make sure all selected drives are empty for best results. This will not delete existing files.")
 	#show drive stats
 	for x in drivesToScan:
-		total, used, free = shutil.disk_usage(x+":/")
+		total, used, free = disk_usage(x+":/")
 		print(f"{x}:/ used:{used},free:{free},total:{total}.")
-	if len(sys.argv) <= 2:
+	if len(argv) <= 2:
 		permission = input('Above looks OK? Continue test? (y/N):')
 		if permission != 'y':
 			print('Aborting.')
@@ -124,5 +125,5 @@ if __name__ == "__main__":
 	for process in processes:
 		process.join()
 	print('Finished.')
-	if len(sys.argv) <= 2: #keep console open if program was run without arguments
+	if len(argv) <= 2: #keep console open if program was run without arguments
 		input('')
