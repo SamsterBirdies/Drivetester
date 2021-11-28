@@ -1,15 +1,15 @@
 # ---SETTINGS---
 
-#Size of block files to write in bytes. (Each drive scanning process will store this in memory). Default: 500_000_000 bytes
-BLOCK_SIZE = 500_000_000
-#Size to subtract from total disk space. Writing bytes to disk uses extra disk space depending on filesystem. Setting this value too low will cause the disk to run out of space. Default: 5_000_000 bytes.
-SUBTRACT_SIZE = 5_000_000 # TODO: create auto adjusting subtract size
+#Size of block files to write in bytes. Must be multiples of 10. Higher values might result in faster speed but more memory consumption. Default: 100_000_000 bytes
+BLOCK_SIZE = 100_000_000 #bytes
+#Size to subtract * blocks from total disk space. Writing bytes to disk uses extra disk space depending on filesystem. Values too low will cause the disk to run out of space. Default: 20_000 bytes.
+BLOCK_SIZE_BIAS = 20_000 #bytes
 
 # ---END OF SETTINGS---
 
 #import
 import shutil, sys
-from multiprocessing import Process, Queue
+from multiprocessing import Process, Queue, Value
 #main function
 def processFunc(driveLetter, procMsg):
 	#init
@@ -22,8 +22,8 @@ def processFunc(driveLetter, procMsg):
 
 	#analyze disk
 	total, used, free = shutil.disk_usage(driveLetter+":/")
-	mainData['fullBlockCount'] = free // BLOCK_SIZE #create 1GB blocks
-	mainData['finalBlockSize'] = (free - SUBTRACT_SIZE) - (mainData['fullBlockCount'] * BLOCK_SIZE)
+	mainData['fullBlockCount'] = free // BLOCK_SIZE #create blocks
+	mainData['finalBlockSize'] = (free - (BLOCK_SIZE_BIAS * (mainData['fullBlockCount'] + 1))) - (mainData['fullBlockCount'] * BLOCK_SIZE)
 
 	#write full blocks
 	procMsg.put([driveLetter,'writing','0/'+str(mainData['fullBlockCount']+1),'pending'])
