@@ -9,7 +9,7 @@ BLOCK_SIZE_BIAS = 20_000 #bytes
 
 #import
 import shutil, sys
-from multiprocessing import Process, Queue, Value
+from multiprocessing import Process, Queue
 #main function
 def processFunc(driveLetter, procMsg):
 	#init
